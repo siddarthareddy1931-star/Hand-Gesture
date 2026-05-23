@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# MediaPipe model assets
+hand_landmarker.task
+
+# IDEs
+.vscode/
+.idea/
