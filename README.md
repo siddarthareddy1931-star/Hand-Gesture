@@ -17,6 +17,37 @@ An interactive Python application that lets you control a 3D particle torus in r
 
 ---
 
+## 📊 Pipeline & Architecture
+
+Below is the workflow of the hand-tracking and rendering pipeline:
+
+```mermaid
+graph TD
+    A[Webcam Video Capture] --> B[Convert BGR to RGB Frame]
+    B --> C[MediaPipe Hand Landmarker]
+    C -->|Hand Landmarks Detected| D[Extract Wrist & Finger Positions]
+    C -->|No Hand Detected| E[Trigger Auto-Pilot Idle State]
+    
+    D --> F[Wrist X/Y normalized coords]
+    D --> G[Thumb & Index Euclidean Distance]
+    
+    F -->|Smoothing Interpolation| H[Target Yaw & Pitch Angles]
+    G -->|Scale Mapping| I[Target Zoom Multiplier]
+    
+    E --> H
+    E --> I
+    
+    H --> J[Rotate 3D Torus Points]
+    I --> J
+    
+    J --> K[Perspective Projection scaling]
+    K --> L[Draw Depth-Shaded Circles on Canvas]
+    L --> M[Overlay Pip Webcam Skeleton Preview]
+    M --> N[Show Window using OpenCV]
+```
+
+---
+
 ## 🛠️ Tech Stack & Dependencies
 
 *   **Python 3.10+**
@@ -81,3 +112,20 @@ Ensure you have Python 3.10 or newer installed. You will also need a working web
     *   The 3D coordinates are projected into 2D screen space using a perspective projection formula:
         $$\text{scale} = \frac{\text{FOV}}{z + \text{depth}}$$
     *   OpenCV draws circles for each particle with sizes and brightness levels scaled dynamically by their depth ($z$) coordinate to create a realistic 3D depth cue.
+
+---
+
+## 🔧 Troubleshooting & Common Issues
+
+### 1. Web Camera Access/Permission Issues
+If the app starts but crashes immediately with camera read errors, make sure:
+* Your camera is connected and not being used by another application (e.g., Zoom, Teams, Discord).
+* On Windows, check **Settings > Privacy & Security > Camera** and ensure access is toggled on for desktop apps.
+
+### 2. Dependency Conflicts (Protobuf / TensorFlow)
+If you encounter `ImportError: cannot import name 'runtime_version' from 'google.protobuf'` or other conflicts:
+* This project specifies a highly compatible version of Protobuf (`protobuf>=5.26.1,<6.0.0dev`). Clean up old packages and reinstall:
+  ```bash
+  pip uninstall -y protobuf mediapipe
+  pip install -r requirements.txt
+  ```
